@@ -11,6 +11,7 @@ const careerRoutes = require("./routes/careerRoutes");
 const historyRoutes = require("./routes/historyRoutes");
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 
