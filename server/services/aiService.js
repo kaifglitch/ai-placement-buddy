@@ -1,30 +1,39 @@
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+const GEMINI_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
 async function callGeminiWithRetry(prompt, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const response = await fetch(GEMINI_URL, {
+  async function tryUrl(url, attempt) {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
+    return response.json();
+  }
 
-    const data = await response.json();
-
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const data = await tryUrl(GEMINI_URL, attempt);
     const isOverloaded =
       data?.error?.code === 503 || data?.error?.status === "UNAVAILABLE";
 
-    if (isOverloaded && attempt < maxRetries) {
-      const waitMs = attempt * 2000;
-      console.log(`Gemini overloaded, retrying in ${waitMs}ms (attempt ${attempt}/${maxRetries})`);
-      await new Promise((resolve) => setTimeout(resolve, waitMs));
-      continue;
+    if (!isOverloaded) {
+      if (data?.error) throw new Error(data.error.message || "Gemini API error");
+      return data;
     }
 
-    if (data?.error) {
-      throw new Error(data.error.message || "Gemini API error");
+    console.log(`Primary model overloaded, attempt ${attempt}/${maxRetries}`);
+
+    if (attempt === maxRetries) {
+      console.log("Primary model still overloaded, trying fallback model...");
+      const fallbackData = await tryUrl(GEMINI_FALLBACK_URL, 1);
+      if (fallbackData?.error) {
+        throw new Error(fallbackData.error.message || "Gemini API error (fallback also failed)");
+      }
+      return fallbackData;
     }
 
-    return data;
+    const waitMs = attempt * 2000;
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
   }
 }
 
