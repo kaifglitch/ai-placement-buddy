@@ -27,6 +27,9 @@ async function signup(req, res) {
       $or: [{ email: trimmedEmail }, ...(trimmedMobile ? [{ mobile: trimmedMobile }] : [])],
     });
 
+    console.log("Signup debug: checking email:", trimmedEmail);
+    console.log("Signup debug: User.findOne result:", existingUser);
+
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }

@@ -1,5 +1,33 @@
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
+async function callGeminiWithRetry(prompt, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const response = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    });
+
+    const data = await response.json();
+
+    const isOverloaded =
+      data?.error?.code === 503 || data?.error?.status === "UNAVAILABLE";
+
+    if (isOverloaded && attempt < maxRetries) {
+      const waitMs = attempt * 2000;
+      console.log(`Gemini overloaded, retrying in ${waitMs}ms (attempt ${attempt}/${maxRetries})`);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+
+    if (data?.error) {
+      throw new Error(data.error.message || "Gemini API error");
+    }
+
+    return data;
+  }
+}
+
 async function generateQuestions(subject, difficulty, numQuestions) {
   const prompt = `Generate ${numQuestions} multiple choice questions for a college placement exam prep on the subject "${subject}" at "${difficulty}" difficulty level.
 Return ONLY a valid JSON array (no markdown formatting, no extra text before or after) where each item has this exact structure:
@@ -11,15 +39,7 @@ Return ONLY a valid JSON array (no markdown formatting, no extra text before or 
   "topic": "string (a specific sub-topic name, e.g. Arrays, Sliding Window, Normalization)"
 }`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-    }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   console.log("Gemini raw response:", JSON.stringify(data, null, 2));
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
@@ -35,13 +55,7 @@ Return ONLY a valid JSON array (no markdown, no extra text) where each item has 
   "category": "string (e.g. Technical, Behavioral, Problem-Solving)"
 }`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
   return JSON.parse(text);
@@ -72,13 +86,7 @@ Return ONLY a valid JSON object (no markdown, no extra text) with this exact str
 }
 The "evaluations" array must have exactly ${questions.length} items, in the same order as the questions.`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
   return JSON.parse(text);
@@ -100,13 +108,7 @@ Return ONLY a valid JSON object (no markdown, no extra text) with this exact str
 }
 Provide exactly 2 items in "examples" and exactly 4 items in "testCases" (including the example cases). The program should read input from stdin and print output to stdout.`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
   return JSON.parse(text);
@@ -130,13 +132,7 @@ Return ONLY a valid JSON object (no markdown, no extra text) with this exact str
   "answer": "string"
 }`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
   return JSON.parse(text);
@@ -159,13 +155,7 @@ Return ONLY a valid JSON array (no markdown, no extra text) with exactly 7 items
 }
 Prioritize the student's weak topics and lowest category scores earlier in the week. Keep tasks specific and actionable (not generic advice).`;
 
-  const response = await fetch(GEMINI_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  });
-
-  const data = await response.json();
+  const data = await callGeminiWithRetry(prompt);
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   text = text.replace(/```json|```/g, "").trim();
   return JSON.parse(text);
