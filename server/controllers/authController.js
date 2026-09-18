@@ -1,56 +1,53 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const Otp = require("../models/Otp");
-const generateOtp = require("../utils/generateOtp");
-const { sendOtpEmail } = require("../services/emailService");
 
-async function requestOtp(req, res) {
+async function signup(req, res) {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+    const { fullName, email, mobile, password, college, branch, gradYear, targetRole } = req.body;
+    const trimmedFullName = String(fullName || "").trim();
+    const trimmedEmail = String(email || "").trim();
+    const trimmedMobile = String(mobile || "").trim();
+    const trimmedPassword = String(password || "").trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const otp = generateOtp();
-    const otpHash = await bcrypt.hash(otp, 10);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    await Otp.deleteMany({ email });
-    await Otp.create({ email, otpHash, expiresAt });
-    await sendOtpEmail(email, otp);
-
-    res.json({ success: true, message: "OTP sent" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-}
-
-async function verifySignup(req, res) {
-  try {
-    const { otp, password, ...userData } = req.body;
-    const record = await Otp.findOne({ email: userData.email });
-
-    if (!record) return res.status(400).json({ success: false, message: "OTP not found, request again" });
-    if (record.expiresAt < new Date()) return res.status(400).json({ success: false, message: "OTP expired" });
-    if (record.attempts >= 5) return res.status(400).json({ success: false, message: "Too many attempts" });
-
-    const isValid = await bcrypt.compare(otp, record.otpHash);
-    if (!isValid) {
-      record.attempts += 1;
-      await record.save();
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    if (!trimmedFullName || !trimmedEmail || !trimmedMobile || !trimmedPassword) {
+      return res.status(400).json({ success: false, message: "Name, email, phone, and password are required" });
     }
 
-    let user = await User.findOne({ email: userData.email });
-    if (!user) {
-      if (!password) return res.status(400).json({ success: false, message: "Password is required" });
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user = await User.create({ ...userData, password: hashedPassword, isVerified: true });
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
     }
 
-    await Otp.deleteMany({ email: userData.email });
+    if (trimmedPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email: trimmedEmail }, ...(trimmedMobile ? [{ mobile: trimmedMobile }] : [])],
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(trimmedPassword, 10);
+    const user = await User.create({
+      fullName: trimmedFullName,
+      email: trimmedEmail,
+      mobile: trimmedMobile,
+      password: hashedPassword,
+      college,
+      branch,
+      gradYear,
+      targetRole,
+    });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.json({ success: true, token, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    res.status(201).json({ success: true, token, user: safeUser });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -70,10 +67,13 @@ async function login(req, res) {
     if (!isValid) return res.status(400).json({ success: false, message: "Incorrect password" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.json({ success: true, token, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    res.json({ success: true, token, user: safeUser });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 }
 
-module.exports = { requestOtp, verifySignup, login };
+module.exports = { signup, login };
