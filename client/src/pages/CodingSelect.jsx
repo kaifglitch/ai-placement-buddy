@@ -34,22 +34,24 @@ function CodingSelect() {
   }
 
   return (
-    <div className="min-h-screen text-offwhite flex items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <h2 className="font-display text-3xl font-bold mb-8">Solve a Coding Problem</h2>
+    <div className="min-h-screen text-offwhite flex flex-col">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <h2 className="font-display text-3xl font-bold mb-8">Solve a Coding Problem</h2>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Difficulty</label>
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={selectClass}>
-          <option>Easy</option>
-          <option>Medium</option>
-          <option>Hard</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Difficulty</label>
+          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={selectClass}>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
 
-        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
-        <Button onClick={handleStart} disabled={loading}>
-          {loading ? "Generating problem..." : "Get Problem"}
-        </Button>
+          <Button onClick={handleStart} disabled={loading}>
+            {loading ? "Generating problem..." : "Get Problem"}
+          </Button>
+        </div>
       </div>
     </div>
   );

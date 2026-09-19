@@ -32,44 +32,46 @@ function InterviewSelect() {
   }
 
   return (
-    <div className="min-h-screen text-offwhite flex items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <h2 className="font-display text-3xl font-bold mb-8">Start a Mock Interview</h2>
+    <div className="min-h-screen text-offwhite flex flex-col">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <h2 className="font-display text-3xl font-bold mb-8">Start a Mock Interview</h2>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Job Role</label>
-        <input
-          value={jobRole}
-          onChange={(e) => setJobRole(e.target.value)}
-          className={selectClass}
-          placeholder="e.g. Software Developer"
-        />
+          <label className="block text-sm text-offwhite/60 mb-1">Job Role</label>
+          <input
+            value={jobRole}
+            onChange={(e) => setJobRole(e.target.value)}
+            className={selectClass}
+            placeholder="e.g. Software Developer"
+          />
 
-        <label className="block text-sm text-offwhite/60 mb-1">Experience Level</label>
-        <select value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className={selectClass}>
-          <option>Fresher</option>
-          <option>1-2 years</option>
-          <option>3-5 years</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Experience Level</label>
+          <select value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className={selectClass}>
+            <option>Fresher</option>
+            <option>1-2 years</option>
+            <option>3-5 years</option>
+          </select>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Interview Type</label>
-        <select value={interviewType} onChange={(e) => setInterviewType(e.target.value)} className={selectClass}>
-          <option>Technical</option>
-          <option>HR</option>
-          <option>Behavioral</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Interview Type</label>
+          <select value={interviewType} onChange={(e) => setInterviewType(e.target.value)} className={selectClass}>
+            <option>Technical</option>
+            <option>HR</option>
+            <option>Behavioral</option>
+          </select>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Number of Questions</label>
-        <select value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)} className={selectClass}>
-          <option value={3}>3</option>
-          <option value={5}>5</option>
-          <option value={7}>7</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Number of Questions</label>
+          <select value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)} className={selectClass}>
+            <option value={3}>3</option>
+            <option value={5}>5</option>
+            <option value={7}>7</option>
+          </select>
 
-        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
-        <Button onClick={handleStart} disabled={loading}>
-          {loading ? "Preparing your interview..." : "Start Interview"}
-        </Button>
+          <Button onClick={handleStart} disabled={loading}>
+            {loading ? "Preparing your interview..." : "Start Interview"}
+          </Button>
+        </div>
       </div>
     </div>
   );

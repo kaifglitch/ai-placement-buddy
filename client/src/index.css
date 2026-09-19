@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0F1229;
-  --color-surface: #171B3A;
+  --color-ink: #050507;
+  --color-surface: #131317;
   --color-gold: #F5A623;
   --color-teal: #3ED9C7;
-  --color-offwhite: #F4F4F8;
+  --color-offwhite: #F5F5F7;
 
   --font-display: "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
@@ -13,6 +13,7 @@
 
 h1, h2, h3 {
   font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 
 /* Ambient animated background glow */

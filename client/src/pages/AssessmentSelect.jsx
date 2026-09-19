@@ -32,32 +32,34 @@ function AssessmentSelect() {
   }
 
   return (
-    <div className="min-h-screen text-offwhite flex items-center justify-center px-6 page-fade-in">
+    <div className="min-h-screen text-offwhite flex flex-col page-fade-in">
       {loading && <LoadingOverlay message="Generating your questions with AI..." />}
-      <div className="w-full max-w-sm">
-        <h2 className="font-display text-3xl font-bold mb-8">Start an Assessment</h2>
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <h2 className="font-display text-3xl font-bold mb-8">Start an Assessment</h2>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Subject</label>
-        <select value={subject} onChange={(e) => setSubject(e.target.value)} className={selectClass}>
-          <option>DSA</option><option>DBMS</option><option>OS</option><option>CN</option>
-          <option>OOP</option><option>Aptitude</option><option>Java</option><option>JavaScript</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Subject</label>
+          <select value={subject} onChange={(e) => setSubject(e.target.value)} className={selectClass}>
+            <option>DSA</option><option>DBMS</option><option>OS</option><option>CN</option>
+            <option>OOP</option><option>Aptitude</option><option>Java</option><option>JavaScript</option>
+          </select>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Difficulty</label>
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={selectClass}>
-          <option>Easy</option><option>Medium</option><option>Hard</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Difficulty</label>
+          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={selectClass}>
+            <option>Easy</option><option>Medium</option><option>Hard</option>
+          </select>
 
-        <label className="block text-sm text-offwhite/60 mb-1">Number of Questions</label>
-        <select value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)} className={selectClass}>
-          <option value={5}>5</option><option value={10}>10</option><option value={20}>20</option>
-        </select>
+          <label className="block text-sm text-offwhite/60 mb-1">Number of Questions</label>
+          <select value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)} className={selectClass}>
+            <option value={5}>5</option><option value={10}>10</option><option value={20}>20</option>
+          </select>
 
-        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
-        <Button onClick={handleStart} disabled={loading}>
-          {loading ? "Generating questions..." : "Start Assessment"}
-        </Button>
+          <Button onClick={handleStart} disabled={loading}>
+            {loading ? "Generating questions..." : "Start Assessment"}
+          </Button>
+        </div>
       </div>
     </div>
   );

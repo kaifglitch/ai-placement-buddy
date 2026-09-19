@@ -1,7 +1,7 @@
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 const GEMINI_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-async function callGeminiWithRetry(prompt, maxRetries = 3) {
+async function callGeminiWithRetry(prompt, maxRetries = 2) {
   async function tryUrl(url, attempt) {
     const response = await fetch(url, {
       method: "POST",
@@ -32,7 +32,7 @@ async function callGeminiWithRetry(prompt, maxRetries = 3) {
       return fallbackData;
     }
 
-    const waitMs = attempt * 2000;
+    const waitMs = attempt * 1000;
     await new Promise((resolve) => setTimeout(resolve, waitMs));
   }
 }
